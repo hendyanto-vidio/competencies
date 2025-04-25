@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>People Skill Grouping Tool</title>
+    <!-- SortableJS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --background-color: #f5f7fa;
+            --card-color: #ffffff;
+            --text-color: #333333;
+            --border-color: #e0e0e0;
+            --hover-color: #f0f0f0;
+            --active-color: #e3f2fd;
+            --shadow: 0 2px 5px rgba(0,0,0,0.1);
+            --group1-color: #f8d7da;
+            --group2-color: #fff3cd;
+            --group3-color: #d1ecf1;
+            --group4-color: #d4edda;
+            --group5-color: #e2e3e5;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.4;
+            padding: 10px;
+            max-width: 1200px;
+            margin: 0 auto;
+            font-size: 14px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 15px;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        h1 {
+            color: var(--secondary-color);
+            font-size: 1.8rem;
+            margin: 0;
+        }
+
+        section {
+            margin-bottom: 15px;
+            background-color: var(--card-color);
+            padding: 12px;
+            border-radius: 6px;
+            box-shadow: var(--shadow);
+        }
+
+        .instructions {
+            background-color: #f8f9fa;
+            border-left: 4px solid var(--primary-color);
+            padding: 8px 12px;
+        }
+
+        .instructions p {
+            font-size: 0.9rem;
+            margin-bottom: 6px;
+        }
+        
+        .instructions p:last-child {
+            margin-bottom: 0;
+        }
+        
+        .url-info {
+            font-size: 0.8rem;
+            color: #666;
+            background-color: #f0f0f0;
+            padding: 4px 8px;
+            border-radius: 4px;
+            margin-top: 6px;
+        }
+        
+        .url-info code {
+            background-color: #e0e0e0;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+        
+        .current-users {
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+        
+        .current-users a {
+            color: var(--primary-color);
+            text-decoration: none;
+            word-break: break-all;
+        }
+        
+        .current-users a:hover {
+            text-decoration: underline;
+        }
+
+        .competency-selector h2 {
+            margin-bottom: 8px;
+            color: var(--secondary-color);
+            font-size: 1.2rem;
+        }
+
+        .tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+
+        .tab-btn {
+            padding: 6px 12px;
+            background-color: #f0f0f0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn:hover {
+            background-color: #e0e0e0;
+        }
+
+        .tab-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .skill-groups-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .skill-group {
+            background-color: var(--card-color);
+            padding: 10px;
+            border-radius: 6px;
+            box-shadow: var(--shadow);
+        }
+
+        .skill-group:nth-child(1) {
+            border-left: 5px solid #6c757d;
+        }
+
+        .skill-group:nth-child(2) {
+            border-left: 5px solid #28a745;
+        }
+
+        .skill-group:nth-child(3) {
+            border-left: 5px solid #17a2b8;
+        }
+
+        .skill-group:nth-child(4) {
+            border-left: 5px solid #ffc107;
+        }
+
+        .skill-group:nth-child(5) {
+            border-left: 5px solid #dc3545;
+        }
+
+        .group-title {
+            margin-bottom: 8px;
+            color: var(--secondary-color);
+            padding-bottom: 6px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1rem;
+        }
+
+        .group-count {
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .sortable-list {
+            list-style: none;
+            min-height: 50px;
+        }
+
+        .person-item {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            margin-bottom: 6px;
+            background-color: var(--card-color);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .person-item:hover {
+            background-color: var(--hover-color);
+        }
+
+        .sortable-chosen {
+            background-color: var(--active-color) !important;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .sortable-ghost {
+            opacity: 0.5;
+        }
+
+        .sortable-drag {
+            opacity: 0.8;
+        }
+
+        .person-info {
+            display: flex;
+            align-items: center;
+            flex: 1;
+        }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 10px;
+            border: 1px solid var(--border-color);
+        }
+
+        .details {
+            flex: 1;
+        }
+
+        .details h3 {
+            font-size: 0.95rem;
+            margin: 0;
+        }
+
+        .details p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .drag-handle {
+            cursor: grab;
+            color: #999;
+            font-size: 1.2rem;
+            padding: 0 6px;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+        }
+
+        button {
+            padding: 6px 12px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        #export-btn {
+            background-color: #27ae60;
+        }
+
+        #export-btn:hover {
+            background-color: #219653;
+        }
+
+        .empty-list-placeholder {
+            padding: 15px;
+            text-align: center;
+            color: #999;
+            font-style: italic;
+            border: 2px dashed var(--border-color);
+            border-radius: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .person-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .person-info {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+
+            .drag-handle {
+                align-self: flex-end;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>People Skill Grouping Tool</h1>
+    </header>
+    
+    <section class="instructions">
+        <p>Drag and drop people to categorize them into the appropriate skill level groups.</p>
+        <p class="url-info">Add people by using URL parameter: <code>?users=Name1,Name2,Name3</code></p>
+        <p class="current-users"></p>
+    </section>
+    
+    <section class="competency-selector">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <h2 style="margin-bottom: 0;">Select Competency</h2>
+            <button id="export-btn">Export All as CSV</button>
+        </div>
+        <div class="tabs" id="competency-tabs">
+            <!-- Tabs will be populated by JavaScript -->
+        </div>
+        <p class="url-info">Add competencies by using URL parameter: <code>?competencies=Skill1,Skill2,Skill3</code></p>
+    </section>
+    
+    <div class="skill-groups-container">
+        <section class="skill-group">
+            <h2 class="group-title">
+                Teach All Tasks, with curriculum
+                <span class="group-count" id="count-teach-all">0</span>
+            </h2>
+            <ul id="group-teach-all" class="sortable-list">
+                <!-- People will be populated here -->
+            </ul>
+        </section>
+        
+        <section class="skill-group">
+            <h2 class="group-title">
+                Perform Advanced Tasks
+                <span class="group-count" id="count-advanced-tasks">0</span>
+            </h2>
+            <ul id="group-advanced-tasks" class="sortable-list">
+                <!-- People will be populated here -->
+            </ul>
+        </section>
+        
+        <section class="skill-group">
+            <h2 class="group-title">
+                Perform Basic Tasks
+                <span class="group-count" id="count-basic-tasks">0</span>
+            </h2>
+            <ul id="group-basic-tasks" class="sortable-list">
+                <!-- People will be populated here -->
+            </ul>
+        </section>
+        
+        <section class="skill-group">
+            <h2 class="group-title">
+                Basic Knowledge
+                <span class="group-count" id="count-basic-knowledge">0</span>
+            </h2>
+            <ul id="group-basic-knowledge" class="sortable-list">
+                <!-- People will be populated here -->
+            </ul>
+        </section>
+        
+        <section class="skill-group">
+            <h2 class="group-title">
+                No Skill
+                <span class="group-count" id="count-no-skill">0</span>
+            </h2>
+            <ul id="group-no-skill" class="sortable-list">
+                <!-- People will be populated here -->
+            </ul>
+        </section>
+    </div>
+    
+    <section class="actions">
+        <button id="save-btn">Save Groupings</button>
+    </section>
+    
+    <script>
+        // Function to parse URL query parameters
+        function getQueryParams() {
+            const params = {};
+            const queryString = window.location.search;
+            const urlParams = new URLSearchParams(queryString);
+            
+            for (const [key, value] of urlParams.entries()) {
+                params[key] = value;
+            }
+            
+            return params;
+        }
+        
+        // Group IDs for easy reference (ordered from highest to lowest skill level)
+        const groupIds = [
+            "group-teach-all",
+            "group-advanced-tasks",
+            "group-basic-tasks",
+            "group-basic-knowledge",
+            "group-no-skill"
+        ];
+        
+        // Function to get competencies from URL parameter
+        function getCompetenciesFromURL() {
+            const params = getQueryParams();
+            let competencies = [];
+            
+            // Check if competencies parameter exists
+            if (params.competencies) {
+                competencies = params.competencies.split(',').map(comp => comp.trim());
+            }
+            
+            // If no competencies provided, use default list
+            if (competencies.length === 0) {
+                competencies = ["Technical Skill", "Leadership", "Communication", "Problem Solving", "Teamwork"];
+            }
+            
+            return competencies;
+        }
+        
+        // Function to generate people data from URL parameter
+        function generatePeopleFromURL() {
+            const params = getQueryParams();
+            let userNames = [];
+            
+            // Check if users parameter exists
+            if (params.users) {
+                userNames = params.users.split(',').map(name => name.trim());
+            }
+            
+            // If no users provided, use default list
+            if (userNames.length === 0) {
+                userNames = ["John", "Jane", "Michael", "Emily", "Robert", "Sarah", "David", "Jennifer"];
+            }
+            
+            // Generate people data
+            return userNames.map((name, index) => {
+                return {
+                    id: index + 1,
+                    name: name,
+                    title: "Team Member",
+                    avatar: `https://api.dicebear.com/7.x/shapes/svg?seed=${encodeURIComponent(name)}`,
+                    department: "Team"
+                };
+            });
+        }
+        
+        // Generate people data
+        const people = generatePeopleFromURL();
+
+        // Get competencies
+        const competencies = getCompetenciesFromURL();
+        
+        // Function to generate competency ID from name
+        function generateCompetencyId(name) {
+            return name.toLowerCase().replace(/[^a-z0-9]/g, '-');
+        }
+        
+        // Function to generate initial groupings
+        function generateInitialGroupings() {
+            // Get all people IDs
+            const peopleIds = people.map(person => person.id);
+            
+            // Create empty groupings for each competency
+            const initialGroupings = {};
+            
+            // For each competency, create an entry and distribute people randomly
+            competencies.forEach(competency => {
+                const competencyId = generateCompetencyId(competency);
+                initialGroupings[competencyId] = {
+                    "group-teach-all": [],
+                    "group-advanced-tasks": [],
+                    "group-basic-tasks": [],
+                    "group-basic-knowledge": [],
+                    "group-no-skill": []
+                };
+                
+                // Create a copy of people IDs to distribute
+                const idsToDistribute = [...peopleIds];
+                
+                // Randomly distribute people across groups
+                while (idsToDistribute.length > 0) {
+                    // Randomly select a group
+                    const groupIndex = Math.floor(Math.random() * groupIds.length);
+                    const groupId = groupIds[groupIndex];
+                    
+                    // Randomly select a person
+                    const personIndex = Math.floor(Math.random() * idsToDistribute.length);
+                    const personId = idsToDistribute[personIndex];
+                    
+                    // Add person to group
+                    initialGroupings[competencyId][groupId].push(personId);
+                    
+                    // Remove person from the list to distribute
+                    idsToDistribute.splice(personIndex, 1);
+                }
+            });
+            
+            return initialGroupings;
+        }
+        
+        // Generate initial groupings
+        const groupings = generateInitialGroupings();
+
+        // Function to create a person item element
+        function createPersonItem(person) {
+            const li = document.createElement('li');
+            li.className = 'person-item';
+            li.setAttribute('data-id', person.id);
+            
+            li.innerHTML = `
+                <div class="person-info">
+                    <img src="${person.avatar}" alt="${person.name}" class="avatar">
+                    <div class="details">
+                        <h3>${person.name}</h3>
+                    </div>
+                </div>
+                <div class="drag-handle">⋮⋮</div>
+            `;
+            
+            return li;
+        }
+
+        // Function to populate the skill groups
+        function populateSkillGroups(competency) {
+            // Clear all groups
+            groupIds.forEach(groupId => {
+                const groupElement = document.getElementById(groupId);
+                groupElement.innerHTML = '';
+            });
+            
+            // Get the grouping for the selected competency
+            const competencyGrouping = groupings[competency] || {
+                "group-teach-all": [],
+                "group-advanced-tasks": [],
+                "group-basic-tasks": [],
+                "group-basic-knowledge": [],
+                "group-no-skill": []
+            };
+            
+            // Populate each group
+            for (const [groupId, personIds] of Object.entries(competencyGrouping)) {
+                const groupElement = document.getElementById(groupId);
+                
+                personIds.forEach(personId => {
+                    const person = people.find(p => p.id === personId);
+                    if (person) {
+                        const personItem = createPersonItem(person);
+                        groupElement.appendChild(personItem);
+                    }
+                });
+                
+                // Update count
+                updateGroupCount(groupId);
+            }
+            
+            // Initialize Sortable on all groups
+            initSortable();
+        }
+
+        // Function to update the count of people in a group
+        function updateGroupCount(groupId) {
+            const countElement = document.getElementById(`count-${groupId.replace('group-', '')}`);
+            const groupElement = document.getElementById(groupId);
+            const count = groupElement.querySelectorAll('.person-item').length;
+            countElement.textContent = count;
+        }
+
+        // Initialize SortableJS on all groups
+        function initSortable() {
+            // Create sortable instances for each group
+            groupIds.forEach(groupId => {
+                const groupElement = document.getElementById(groupId);
+                
+                // Destroy existing sortable instance if it exists
+                if (groupElement.sortable) {
+                    groupElement.sortable.destroy();
+                }
+                
+                // Create new sortable instance
+                groupElement.sortable = new Sortable(groupElement, {
+                    animation: 150,
+                    ghostClass: 'sortable-ghost',
+                    chosenClass: 'sortable-chosen',
+                    dragClass: 'sortable-drag',
+                    handle: '.drag-handle',
+                    group: 'people', // This allows dragging between groups
+                    onEnd: function(evt) {
+                        // Update counts for both source and destination groups
+                        const sourceGroupId = evt.from.id;
+                        const destinationGroupId = evt.to.id;
+                        
+                        updateGroupCount(sourceGroupId);
+                        if (sourceGroupId !== destinationGroupId) {
+                            updateGroupCount(destinationGroupId);
+                        }
+                        
+                        // Save the new groupings
+                        saveGroupings();
+                    }
+                });
+            });
+        }
+
+        // Save groupings
+        function saveGroupings() {
+            const currentCompetency = document.querySelector('.tab-btn.active').getAttribute('data-competency');
+            const newGrouping = {};
+            
+            // Collect person IDs from each group
+            groupIds.forEach(groupId => {
+                const groupElement = document.getElementById(groupId);
+                const personItems = groupElement.querySelectorAll('.person-item');
+                newGrouping[groupId] = Array.from(personItems).map(item => parseInt(item.getAttribute('data-id')));
+            });
+            
+            // Update groupings object
+            groupings[currentCompetency] = newGrouping;
+            
+            // Show save notification
+            const saveBtn = document.getElementById('save-btn');
+            const originalText = saveBtn.textContent;
+            saveBtn.textContent = 'Groupings Saved!';
+            saveBtn.style.backgroundColor = '#27ae60';
+            
+            setTimeout(() => {
+                saveBtn.textContent = originalText;
+                saveBtn.style.backgroundColor = '';
+            }, 2000);
+        }
+
+        // Export all groupings as CSV
+        function exportGroupings() {
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "ID,Name,Competency,Skill Level,Rank within Group\n";
+            
+            // For each competency
+            for (const [competencyId, competencyGrouping] of Object.entries(groupings)) {
+                // Find the competency name from the ID
+                const competencyName = competencies.find(comp => 
+                    generateCompetencyId(comp) === competencyId
+                ) || competencyId;
+                
+                // For each skill group in this competency
+                for (const [groupId, personIds] of Object.entries(competencyGrouping)) {
+                    // Get the skill level name from the group ID
+                    let skillLevel = "";
+                    switch(groupId) {
+                        case "group-teach-all": skillLevel = "Teach All Tasks, with curriculum"; break;
+                        case "group-advanced-tasks": skillLevel = "Perform Advanced Tasks"; break;
+                        case "group-basic-tasks": skillLevel = "Perform Basic Tasks"; break;
+                        case "group-basic-knowledge": skillLevel = "Basic Knowledge"; break;
+                        case "group-no-skill": skillLevel = "No Skill"; break;
+                        default: skillLevel = groupId;
+                    }
+                    
+                    // Add each person in this group to the CSV with their rank within the group
+                    personIds.forEach((personId, index) => {
+                        const person = people.find(p => p.id === personId);
+                        if (person) {
+                            const row = [
+                                person.id,
+                                person.name,
+                                competencyName,
+                                skillLevel,
+                                index + 1  // Rank within group (1-based)
+                            ].join(",");
+                            
+                            csvContent += row + "\n";
+                        }
+                    });
+                }
+            }
+            
+            // Download the CSV file
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `all_skill_groupings.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Function to create competency tabs
+        function createCompetencyTabs() {
+            const tabsContainer = document.getElementById('competency-tabs');
+            tabsContainer.innerHTML = '';
+            
+            competencies.forEach((competency, index) => {
+                const competencyId = generateCompetencyId(competency);
+                const button = document.createElement('button');
+                button.className = 'tab-btn' + (index === 0 ? ' active' : '');
+                button.setAttribute('data-competency', competencyId);
+                button.textContent = competency;
+                
+                tabsContainer.appendChild(button);
+            });
+        }
+        
+        // Handle competency tab switching
+        function setupTabButtons() {
+            const tabButtons = document.querySelectorAll('.tab-btn');
+
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // Remove active class from all buttons
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    
+                    // Add active class to clicked button
+                    button.classList.add('active');
+                    
+                    // Load groupings for the selected competency
+                    const competency = button.getAttribute('data-competency');
+                    populateSkillGroups(competency);
+                });
+            });
+        }
+
+        // Setup save button
+        function setupSaveButton() {
+            const saveBtn = document.getElementById('save-btn');
+            saveBtn.addEventListener('click', saveGroupings);
+        }
+
+        // Setup export button
+        function setupExportButton() {
+            const exportBtn = document.getElementById('export-btn');
+            exportBtn.addEventListener('click', exportGroupings);
+        }
+
+        // Display current users and competencies in the UI
+        function displayCurrentUsers() {
+            const params = getQueryParams();
+            const currentUsersElement = document.querySelector('.current-users');
+            
+            // Build the shareable URL with all parameters
+            let shareableUrl = `${window.location.origin}${window.location.pathname}?`;
+            let urlParams = [];
+            
+            if (params.users) {
+                urlParams.push(`users=${encodeURIComponent(params.users)}`);
+            }
+            
+            if (params.competencies) {
+                urlParams.push(`competencies=${encodeURIComponent(params.competencies)}`);
+            }
+            
+            shareableUrl += urlParams.join('&');
+            
+            // Display users info
+            if (params.users) {
+                const userNames = params.users.split(',').map(name => name.trim());
+                
+                currentUsersElement.innerHTML = `
+                    <strong>Current Users:</strong> ${userNames.join(', ')}
+                    <br>
+                    <strong>Current Competencies:</strong> ${competencies.join(', ')}
+                    <br>
+                    <strong>Shareable URL:</strong> 
+                    <a href="${shareableUrl}" target="_blank">${shareableUrl}</a>
+                `;
+            } else {
+                currentUsersElement.innerHTML = `
+                    <strong>Using default users and competencies.</strong> Add your own with the URL parameters.
+                `;
+            }
+        }
+
+        // Initialize the page
+        function init() {
+            createCompetencyTabs();
+            setupTabButtons();
+            setupSaveButton();
+            setupExportButton();
+            displayCurrentUsers();
+            
+            // Get the first competency ID
+            const firstCompetencyId = generateCompetencyId(competencies[0]);
+            populateSkillGroups(firstCompetencyId);
+        }
+
+        // Run initialization when the DOM is fully loaded
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
